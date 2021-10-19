@@ -88,7 +88,7 @@ class TDAPI():
 			self.refresh_tok = resp["refresh_token"]
 
 	@check_auth	
-	def get_history(self, ticker="", periodType="day", period="10", frequencyType="minute", frequency="1", start_epoch="", end_epoch=""):
+	def get_history(self, ticker="", periodType="day", period="10", frequencyType="minute", frequency="1", start_epoch=0, end_epoch=0, datetime_str=True):
 		"""
 		Get the historical data from a stock. If using epochs for time period no need to specify period argument
 
@@ -97,23 +97,26 @@ class TDAPI():
 		period -- {"day" : [1, 2, 3, 4, 5, 10], "month" : [1,2,3,6], "year" : [1, 2, 3, 5, 10, 15, 20], "ytd" : 1} how much history to return for the ticker\n
 		frequencyType -- {"day" : "minute", "month" : ["daily","weekly"], "year" : ["daily", "weekly", "monthly"], "ytd" : ["daily", "weekly"]} frequency that a new chunk is created\n
 		frequency -- {"minute" : ["1", "5", "10", "15", "30"], "daily" : "1", "weekly" : "1", "monthly" : "1"} number of frequencyType in each chunk\n
-		start_epoch -- POSIX timestamp in milliseconds to begin. Must be int not float
-		end_epoch -- POSIX timestamp in milliseconds to end. Must be int not float
+		start_epoch -- POSIX timestamp in seconds to begin. Must be int not float
+		end_epoch -- POSIX timestamp in seconds to end. Must be int not float
 		"""
 
 		headers = {"Authorization" : f"Bearer {self.auth_tok}"}
 		
-		if start_epoch == "":
+		if start_epoch == 0:
 			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "period" : period, "frequencyType" : frequencyType, "frequency": frequency}, headers=headers).json()
 		else:
+			start_epoch *= 1000
+			end_epoch *= 1000
 			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "frequencyType" : frequencyType, "frequency": frequency, "endDate" : end_epoch, "startDate" : start_epoch}, headers=headers).json()
 
 		if "error" in resp:
 			print(f"CANNOT COMPLETE REQUEST ----- {resp}")
-			return ""
+			return "ERROR" + resp["error"]
 		
-		for x in resp["candles"]:
-			x["datetime"] = datetime.fromtimestamp(x["datetime"]/1000).strftime("%m/%d/%Y, %H:%M:%S")
-		
+		if datetime_str:
+			for x in resp["candles"]:
+				x["datetime"] = datetime.fromtimestamp(x["datetime"]/1000).strftime("%m/%d/%Y, %H:%M:%S")
+			
 		return resp["candles"]
 		
