@@ -12,6 +12,7 @@ The Article class contains the following:
 - author: Person that wrote the article
 - date: Date of publication
 - site: Site of origin
+- url: URL of origin
 - text: Body of the article
 
 ## Sentiment

@@ -2,7 +2,7 @@
 
 The web scraper (written in Python) will be a tool to grab stock articles from common websites.
 
-The Scraper class leverages a json document 'tags.json' that provides custom methods for parsing field data for each site.
+The Scraper class leverages abstract overridden methods to get urls and scrape them
 
 ## Versions
 
