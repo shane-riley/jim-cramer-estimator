@@ -1,5 +1,5 @@
-from datetime import date
-from typing import Set
+from datetime import datetime
+import json
 
 class Article():
     """
@@ -20,3 +20,16 @@ class Article():
     def __init__(self):
         # Do nothing
         pass
+
+    def json_dump(self, name: str) -> None:
+        """
+        Writes object into json file with given name
+
+        Args:
+            name (str): file location
+        """
+
+        jsonStr = json.dumps(self.__dict__, indent=4, sort_keys=True, default=str)
+
+        with open(name, 'w') as f:
+            f.write(jsonStr)

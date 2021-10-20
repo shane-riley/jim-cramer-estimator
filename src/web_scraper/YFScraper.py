@@ -28,6 +28,38 @@ class YFScraper(BaseScraper):
         """
         raise NotImplementedError
 
+    def get_urls_from_author(self, author: str) -> list:
+        """
+        Get a sample list of stories corresponding to an author
+        
+        Args:
+            author (str): Author name
+        
+        Returns:
+            list: list of story URL's
+
+        """
+
+        # Make the link
+        author = author.replace(' ', '-').lower()
+        url = f'https://www.yahoo.com/author/{author}'
+
+        # Download the article
+        soup = BeautifulSoup(super().download_article(url), 'html.parser')
+
+        # Look at the availible links
+        urls = []
+        for link in soup.find_all('a'):
+            url = link['href']
+            if "https://finance.yahoo.com/news" in url:
+                urls.append(url)
+
+        # NOTE: The YF Author pages have buttons that reveal more links. Accessing older links is more complex than a page download
+        
+        return urls
+
+
+
     def parse_article(self, url: str) -> Article:
         """
         Parse a URL article into an Article object
