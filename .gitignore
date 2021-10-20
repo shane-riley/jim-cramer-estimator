@@ -2,3 +2,6 @@
 *.db
 venv
 __pycache__
+test_db
+.vscode
+test_out
