@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime, timedelta
+from src.logging.Logger import Logger
 
 
 class TDAPI():
@@ -11,10 +12,15 @@ class TDAPI():
 	
 	"""
 
-	def __init__(self):
+	def __init__(self, logger=None):
 		self.retreive_client()
 		self.retreive_refresh()
 		self.retreive_auth()
+		if not logger:
+			self.log = Logger(level=3, out=1)
+		else:
+			self.log = logger
+			
 
 	def retreive_client(self):
 		"""
@@ -67,8 +73,8 @@ class TDAPI():
 		"""
 		resp = requests.post("https://api.tdameritrade.com/v1/oauth2/token", data={"grant_type": "refresh_token", "refresh_token": self.refresh_tok, "client_id" : self.client_token}).json()
 		if "error" in resp:
-			print(resp)
-			print("UNABLE TO CREATE NEW AUTH TOKEN")
+			self.log.debug(resp)
+			self.log.critical("UNABLE TO CREATE NEW AUTH TOKEN")
 			return 
 		with open("auth_token.key", "w") as f:
 			f.write(resp["access_token"]+"\n")
@@ -81,7 +87,7 @@ class TDAPI():
 		Create a new refresh token. Should be used every ~80 days
 		"""
 		resp = requests.post("https://api.tdameritrade.com/v1/oauth2/token", data={"grant_type": "refresh_token", "refresh_token": self.refresh_tok, "access_type": "offline", "client_id" : self.client_token, "redirect_uri" : ""}).json()
-		print(resp)
+		self.log.debug(resp)
 		with open("refresh_token.key", "w") as f:
 			f.write(resp["refresh_token"]+"\n")
 			f.write(datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
@@ -111,7 +117,7 @@ class TDAPI():
 			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "frequencyType" : frequencyType, "frequency": frequency, "endDate" : end_epoch, "startDate" : start_epoch}, headers=headers).json()
 
 		if "error" in resp:
-			print(f"CANNOT COMPLETE REQUEST ----- {resp}")
+			self.log.critical(f"CANNOT COMPLETE REQUEST ----- {resp}")
 			return "ERROR" + resp["error"]
 		
 		if datetime_str:
