@@ -8,28 +8,27 @@ class Article():
     Stored in the database as article table rows
     """
 
-    # Instance variables
-    tickers = set()
-    author  = ""
-    date    = None
-    site    = ""
-    url     = ""
-    text    = ""
-    title   = ""
-
     def __init__(self):
-        # Do nothing
-        pass
+            # Instance variables
+        self.tickers = set()
+        self.author  = ""
+        self.date    = None
+        self.site    = ""
+        self.url     = ""
+        self.text    = ""
+        self.title   = ""
 
-    def json_dump(self, name: str) -> None:
+    def json_dump(self, name=None) -> str:
         """
-        Writes object into json file with given name
+        Writes object into json file with given name, or if no name given return as a string
 
         Args:
-            name (str): file location
+            name (str): file location, or none to return a string
         """
 
         jsonStr = json.dumps(self.__dict__, indent=4, sort_keys=True, default=str)
-
-        with open(name, 'w') as f:
-            f.write(jsonStr)
+        if name:
+            with open(name, 'w') as f:
+                f.write(jsonStr)
+            return "OUTPUT TO FILE!"
+        return jsonStr

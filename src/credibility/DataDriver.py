@@ -8,7 +8,7 @@ class DataDriver():
 	def __init__(self, logger=None):
 		self.database = sqlite3.connect("stocks.db")
 		self.database_cur = self.database.cursor()
-		self.API = TDAPI()
+		self.API = TDAPI(logger)
 		try:
 			self.database_cur.execute("SELECT * FROM stocks LIMIT 1")
 		except sqlite3.OperationalError:
@@ -16,7 +16,7 @@ class DataDriver():
 		if not logger:
 			self.log = Logger(level=3, out=1)
 		else:
-			self.log = logger		
+			self.log = logger	
 
 	def calculate_historical(self, ticker, start, end=""):
 		"""
@@ -27,6 +27,7 @@ class DataDriver():
 		if row:
 			self.log.debug(row)
 		else:
+			self.log.debug("Not in database, calling API")
 			self.fetch_historical(ticker, start, end)
 
 

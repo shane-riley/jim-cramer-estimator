@@ -4,7 +4,7 @@ from src.credibility.DataDriver import DataDriver
 from datetime import datetime
 from src.logging.Logger import Logger
 
-log = Logger(2, out=1)
+log = Logger(1, out=2, path="Logs/API_test")
 
 tester = TDAPI(logger=log)
 start = datetime.strptime("10/9/2019", "%m/%d/%Y")

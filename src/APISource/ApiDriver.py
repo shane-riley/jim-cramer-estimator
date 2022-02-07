@@ -13,14 +13,13 @@ class TDAPI():
 	"""
 
 	def __init__(self, logger=None):
-		self.retreive_client()
-		self.retreive_refresh()
-		self.retreive_auth()
 		if not logger:
 			self.log = Logger(level=3, out=1)
 		else:
 			self.log = logger
-			
+		self.retreive_client()
+		self.retreive_refresh()
+		self.retreive_auth()
 
 	def retreive_client(self):
 		"""
@@ -106,7 +105,7 @@ class TDAPI():
 		start_epoch -- POSIX timestamp in seconds to begin. Must be int not float
 		end_epoch -- POSIX timestamp in seconds to end. Must be int not float
 		"""
-
+		self.log.debug(f"Querying API for {ticker}")
 		headers = {"Authorization" : f"Bearer {self.auth_tok}"}
 		
 		if start_epoch == 0:
@@ -123,6 +122,6 @@ class TDAPI():
 		if datetime_str:
 			for x in resp["candles"]:
 				x["datetime"] = datetime.fromtimestamp(x["datetime"]/1000).strftime("%m/%d/%Y, %H:%M:%S")
-			
+		self.log.debug(f"API RETURNED {resp}")
 		return resp["candles"]
 		

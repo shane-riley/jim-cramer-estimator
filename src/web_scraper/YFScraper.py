@@ -1,5 +1,6 @@
 from src.web_scraper.BaseScraper import BaseScraper
 from src.core.Article import Article
+from src.logging import Logger
 
 from requests import HTTPError
 from bs4 import BeautifulSoup
@@ -10,6 +11,12 @@ class YFScraper(BaseScraper):
     """
     Web Scraper for Yahoo Finance
     """
+    def __init__(self, logger=None):
+        if not logger:
+            self.log = Logger(level=3, out=1)
+        else:
+            self.log = logger
+
 
     SITE_NAME = 'Yahoo Finance'
 
@@ -93,7 +100,6 @@ class YFScraper(BaseScraper):
         ticker_elems = soup.find_all('div', {'data-entity-type': 'ticker'})
         for elem in ticker_elems:
             art.tickers.add(str(elem['data-entity-id']))
-
 
         # Author
         art.author = soup.find('span', {'class': 'caas-author-byline-collapse'}).text
