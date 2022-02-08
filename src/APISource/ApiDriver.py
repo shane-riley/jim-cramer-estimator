@@ -102,8 +102,8 @@ class TDAPI():
 		period -- {"day" : [1, 2, 3, 4, 5, 10], "month" : [1,2,3,6], "year" : [1, 2, 3, 5, 10, 15, 20], "ytd" : 1} how much history to return for the ticker\n
 		frequencyType -- {"day" : "minute", "month" : ["daily","weekly"], "year" : ["daily", "weekly", "monthly"], "ytd" : ["daily", "weekly"]} frequency that a new chunk is created\n
 		frequency -- {"minute" : ["1", "5", "10", "15", "30"], "daily" : "1", "weekly" : "1", "monthly" : "1"} number of frequencyType in each chunk\n
-		start_epoch -- POSIX timestamp in seconds to begin. Must be int not float
-		end_epoch -- POSIX timestamp in seconds to end. Must be int not float
+		start_epoch -- POSIX timestamp in milliseconds to begin. Must be int not float
+		end_epoch -- POSIX timestamp in milliseconds to end. Must be int not float
 		"""
 		self.log.debug(f"Querying API for {ticker}")
 		headers = {"Authorization" : f"Bearer {self.auth_tok}"}
@@ -111,8 +111,6 @@ class TDAPI():
 		if start_epoch == 0:
 			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "period" : period, "frequencyType" : frequencyType, "frequency": frequency}, headers=headers).json()
 		else:
-			start_epoch *= 1000
-			end_epoch *= 1000
 			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "frequencyType" : frequencyType, "frequency": frequency, "endDate" : end_epoch, "startDate" : start_epoch}, headers=headers).json()
 
 		if "error" in resp:
