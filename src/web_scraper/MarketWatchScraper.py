@@ -1,10 +1,10 @@
-import re
 
+import re
 from src.web_scraper.BaseScraper import BaseScraper
 from src.core.Article import Article
 from src.logging import Logger
 
-from requests import HTTPError, get
+from requests import HTTPError
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -13,9 +13,9 @@ TODO: How to scrape the slideshow articles?
 
 """
 
-class USNewsScraper(BaseScraper):
+class MarketWatchScraper(BaseScraper):
 
-	SITE_NAME = 'US News'
+	SITE_NAME = 'Market Watch'
 	def __init__(self, logger=None):
 		if not logger:
 			self.log = Logger(level=3, out=1)
@@ -64,35 +64,37 @@ class USNewsScraper(BaseScraper):
 		soup = BeautifulSoup(html_doc, 'html.parser')
 
 		# Title
-		art.title = soup.find('h1', {'class': re.compile("Heading__HeadingStyled.*")}).text
+		art.title = soup.find('h1', {'class': 'article__headline'}).text
 
 		# Tickers
-
-		#Check if using iframe ticker display
-		ticker_elems = soup.find_all('div', {'class': 'tradingview-widget-copyright'}) 
-		if ticker_elems:
-			ticker_getter = re.compile("/symbols/.*/")
-			for elem in ticker_elems:
-				ticker = ticker_getter.search(elem.contents[0]["href"]).group(0)[9:-1] 
-				self.log.debug(ticker)
-				art.tickers.add(ticker)
-		else:
-			#If no iframe, get from the article headers
-			ticker_elems = soup.find_all('h3', {'class': 'heading-large'})
-			ticker_getter = re.compile("\(\w*\)")
-			for elem in ticker_elems:
-				ticker = ticker_getter.search(elem.text)
-				if ticker:
-					ticker = ticker.group(0)[1:-1]
-					self.log.debug(ticker)
-					art.tickers.add(ticker)
+		tickers = soup.findAll('span', {'class': 'symbol'})
+		for ticker in tickers:
+			art.tickers.add(ticker.text)
+		
+		
 			
 		# Author
-		art.author = soup.find('a', {'class': re.compile(".*BylineArticle__AuthorAnchor.*")}).text
+		art.author = soup.find('h4', {'itemprop': 'name'}).text
 
 		# Date
-		art.date = soup.find('span', {'class': re.compile(".*byline-article-date-span")}).text
-		art.date = int(datetime.strptime(art.date, "%b. %d, %Y").timestamp()*1000)
+		update = 0
+
+		art.date = soup.find('time', {'class': 'timestamp timestamp--update'}).text
+		if not art.date:
+			update = 1
+			art.date = soup.find('time', {'class': 'timestamp timestamp--pub'}).text
+		
+		art.date = re.sub('\s+', ' ', art.date)[1:-4]
+		self.log.debug(art.date[-4:])
+		if art.date[-4:] == "a.m.":
+			art.date = art.date[:-4] + "AM"
+		if art.date[-4:] == "p.m.":
+			art.date = art.date[:-4] + "PM"
+		
+		if update == 0:
+			art.date = int(datetime.strptime(art.date, "Last Updated: %b. %d, %Y at %I:%M %p").timestamp()*1000)
+		else:
+			art.date = int(datetime.strptime(art.date, "Published: %b. %d, %Y at %I:%M %p").timestamp()*1000)
 
 		# Site
 		art.site = self.SITE_NAME
@@ -101,7 +103,8 @@ class USNewsScraper(BaseScraper):
 		art.url = url
 
 		# Text
-		art.text = soup.find('div', {'id': "ad-in-text-target"}).text
+		# TODO: change this to only scrape <p> from this div
+		art.text = soup.find('div', {'id': 'js-article__body'}).text
 		
 		return art
 

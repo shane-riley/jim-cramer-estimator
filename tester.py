@@ -2,13 +2,15 @@ from src.core.ApiDriver import TDAPI
 from src.core.DataDriver import DataDriver
 from datetime import datetime
 from src.logging.Logger import Logger
+from src.web_scraper.MarketWatchScraper import MarketWatchScraper
 from src.web_scraper.USNewsScraper import USNewsScraper
 from src.web_scraper.YFScraper import YFScraper
 
-log = Logger(level=1, out=2, path="Logs/Tests")
+log = Logger(level=1, out=2, path="Logs/TestLogs")
 
 usscrape = USNewsScraper(logger=log)
 yfscrape = YFScraper(logger=log)
+MWScrape = MarketWatchScraper(logger=log)
 
 tester = TDAPI(logger=log)
 start = datetime.strptime("10/9/2019", "%m/%d/%Y")
@@ -19,13 +21,16 @@ log.info(str(ret))
 data = DataDriver(logger=log)
 data.calculate_historical("TSLA", start=1612210000000, end=1632210000000)
 
-art = usscrape.parse_article("https://money.usnews.com/investing/stock-market-news/articles/ipo-stocks-to-watch-this-month")
+art = MWScrape.parse_article("https://www.marketwatch.com/articles/facebook-meta-platforms-stock-price-51644413822?mod=search_headline")
 log.info(art.json_dump())
 
-yahoo_art = yfscrape.parse_article("https://finance.yahoo.com/news/a-meta-morphosis-in-market-sentiment-morning-brief-100754611.html")
-log.info(yahoo_art.json_dump())
+#art = usscrape.parse_article("https://money.usnews.com/investing/stock-market-news/articles/ipo-stocks-to-watch-this-month")
+#log.info(art.json_dump())
 
-data.insert_article(art.json_dump())
-data.insert_article(yahoo_art.json_dump())
+#yahoo_art = yfscrape.parse_article("https://finance.yahoo.com/news/a-meta-morphosis-in-market-sentiment-morning-brief-100754611.html")
+#log.info(yahoo_art.json_dump())
+
+#data.insert_article(art.json_dump())
+#data.insert_article(yahoo_art.json_dump())
 
 log.close()
