@@ -92,6 +92,7 @@ class USNewsScraper(BaseScraper):
 
         # Date
         art.date = soup.find('span', {'class': re.compile(".*byline-article-date-span")}).text
+        art.date = int(datetime.strptime(art.date, "%b. %d, %Y").timestamp()*1000)
 
         # Site
         art.site = self.SITE_NAME

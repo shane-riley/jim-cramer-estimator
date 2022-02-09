@@ -105,7 +105,7 @@ class YFScraper(BaseScraper):
         art.author = soup.find('span', {'class': 'caas-author-byline-collapse'}).text
 
         # Date
-        art.date = isoparse(soup.find('time')['datetime'])
+        art.date = int(isoparse(soup.find('time')['datetime']).timestamp() * 1000)
 
         # Site
         art.site = self.SITE_NAME
