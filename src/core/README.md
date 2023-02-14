@@ -27,6 +27,7 @@ This class handles the API authentication and requests to provide historical sto
 	- grant_type authorization_code
 	- access_type offline
 	- code {URL_DECODED_CODE}
+	- client_id {CLIENT_ID}
 	- redirect_uri http://localhost
 6) Paste the refresh_token into refresh_token.key
 7) ApiDriver.py can now handle reauth again

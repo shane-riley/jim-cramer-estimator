@@ -1,6 +1,8 @@
 import requests
+import logging
+
 from datetime import datetime, timedelta
-from src.logging.Logger import Logger
+
 
 
 class TDAPI():
@@ -10,13 +12,9 @@ class TDAPI():
 	Provides wrapper methods for API calls to abstract it away from the rest of the program, only needing to 
 	provide the arguments and receiving data as a return
 	
-	"""
+	""" 
 
-	def __init__(self, logger=None):
-		if not logger:
-			self.log = Logger(level=3, out=1)
-		else:
-			self.log = logger
+	def __init__(self):
 		self.retreive_client()
 		self.retreive_refresh()
 		self.retreive_auth()
@@ -72,8 +70,8 @@ class TDAPI():
 		"""
 		resp = requests.post("https://api.tdameritrade.com/v1/oauth2/token", data={"grant_type": "refresh_token", "refresh_token": self.refresh_tok, "client_id" : self.client_token}).json()
 		if "error" in resp:
-			self.log.debug(resp)
-			self.log.critical("UNABLE TO CREATE NEW AUTH TOKEN")
+			logging.debug(resp)
+			logging.critical("UNABLE TO CREATE NEW AUTH TOKEN")
 			return 
 		with open("auth_token.key", "w") as f:
 			f.write(resp["access_token"]+"\n")
@@ -86,7 +84,7 @@ class TDAPI():
 		Create a new refresh token. Should be used every ~80 days
 		"""
 		resp = requests.post("https://api.tdameritrade.com/v1/oauth2/token", data={"grant_type": "refresh_token", "refresh_token": self.refresh_tok, "access_type": "offline", "client_id" : self.client_token, "redirect_uri" : ""}).json()
-		self.log.debug(resp)
+		logging.debug(resp)
 		with open("refresh_token.key", "w") as f:
 			f.write(resp["refresh_token"]+"\n")
 			f.write(datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
@@ -105,7 +103,7 @@ class TDAPI():
 		start_epoch -- POSIX timestamp in milliseconds to begin. Must be int not float
 		end_epoch -- POSIX timestamp in milliseconds to end. Must be int not float
 		"""
-		self.log.debug(f"Querying API for {ticker}")
+		logging.debug(f"Querying API for {ticker}")
 		headers = {"Authorization" : f"Bearer {self.auth_tok}"}
 		
 		if start_epoch == 0:
@@ -114,12 +112,12 @@ class TDAPI():
 			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "frequencyType" : frequencyType, "frequency": frequency, "endDate" : end_epoch, "startDate" : start_epoch}, headers=headers).json()
 
 		if "error" in resp:
-			self.log.critical(f"CANNOT COMPLETE REQUEST ----- {resp}")
+			logging.critical(f"CANNOT COMPLETE REQUEST ----- {resp}")
 			return "ERROR" + resp["error"]
 		
 		if datetime_str:
 			for x in resp["candles"]:
 				x["datetime"] = datetime.fromtimestamp(x["datetime"]/1000).strftime("%m/%d/%Y, %H:%M:%S")
-		self.log.debug(f"API RETURNED {resp}")
+		logging.debug(f"API RETURNED {resp}")
 		return resp["candles"]
 		
