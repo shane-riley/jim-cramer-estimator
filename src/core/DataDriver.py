@@ -1,16 +1,14 @@
-from src.core.ApiDriver import TDAPI
 import sqlite3
+import logging
+
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from src.logging.Logger import Logger
+
+from src.core.ApiDriver import TDAPI
 
 class DataDriver():
-	def __init__(self, logger=None):
-		if not logger:
-			self.log = Logger(level=3, out=1)
-		else:
-			self.log = logger	
-		self.API = TDAPI(self.log)
+	def __init__(self):
+		self.API = TDAPI()
 		self.connect_stock()
 		self.connect_articles()
 
@@ -49,7 +47,7 @@ class DataDriver():
 		try:
 			self.art_db_cur.execute(f"SELECT * FROM '{json['site']}' LIMIT 1")
 		except sqlite3.OperationalError:
-			self.log.debug("creating site table")
+			logging.debug("creating site table")
 			self.art_db_cur.execute(f"CREATE TABLE '{json['site']}' (article_id integer, author text, date real, title text, content text, url text)")
 			
 		self.art_db_cur.execute(f"INSERT into article (site) VALUES ('{json['site']}')")
@@ -81,9 +79,9 @@ class DataDriver():
 		result = self.stock_db_cur.execute(f"SELECT * FROM stocks WHERE ticker='{ticker}' AND date >= {start} AND date <= {end}")
 		row = result.fetchall()
 		if row:
-			self.log.debug(f"Pulled from database: {row}")
+			logging.debug(f"Pulled from database: {row}")
 		else:
-			self.log.debug("Not in database, calling API")
+			logging.debug("Not in database, calling API")
 			self.fetch_historical(ticker, start, end)
 
 

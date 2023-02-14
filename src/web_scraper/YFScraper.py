@@ -1,24 +1,23 @@
-from src.web_scraper.BaseScraper import BaseScraper
-from src.core.Article import Article
-from src.logging import Logger
+import logging
 
 from requests import HTTPError
 from bs4 import BeautifulSoup
 from datetime import datetime
 from dateutil.parser import isoparse
 
+from src.web_scraper.BaseScraper import BaseScraper
+from src.core.Article import Article
+
+
 class YFScraper(BaseScraper):
-	"""
+
+	SITE_NAME = 'Yahoo Finance'
+
+	""" 
 	Web Scraper for Yahoo Finance
 	"""
 	def __init__(self, logger=None):
-		if not logger:
-			self.log = Logger(level=3, out=1)
-		else:
-			self.log = logger
-
-
-	SITE_NAME = 'Yahoo Finance'
+		pass
 
 	def get_url(self, index: int) -> str:
 		"""

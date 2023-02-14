@@ -1,26 +1,23 @@
-
+import logging
 import re
-from src.web_scraper.BaseScraper import BaseScraper
-from src.core.Article import Article
-from src.logging import Logger
 
 from requests import HTTPError
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+from src.web_scraper.BaseScraper import BaseScraper
+from src.core.Article import Article
+
 """
-TODO: How to scrape the slideshow articles?
+TODO: How to scrape t he slideshow articles?
 
 """
 
 class MarketWatchScraper(BaseScraper):
 
 	SITE_NAME = 'Market Watch'
-	def __init__(self, logger=None):
-		if not logger:
-			self.log = Logger(level=3, out=1)
-		else:
-			self.log = logger
+	def __init__(self):
+		pass
 
 	def get_url(self, index: int) -> str:
 		"""
@@ -85,7 +82,7 @@ class MarketWatchScraper(BaseScraper):
 			art.date = soup.find('time', {'class': 'timestamp timestamp--pub'}).text
 		
 		art.date = re.sub('\s+', ' ', art.date)[1:-4]
-		self.log.debug(art.date[-4:])
+		logging.debug(art.date[-4:])
 		if art.date[-4:] == "a.m.":
 			art.date = art.date[:-4] + "AM"
 		if art.date[-4:] == "p.m.":
