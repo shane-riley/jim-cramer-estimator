@@ -25,20 +25,20 @@ def main():
 	data = DataDriver()
 
 
-	with open("mw.txt", 'w') as f:
+	with open("web_scraper/mw.txt", 'r') as f:
 		for line in f:
 			art = MWScrape.parse_article(line)
-			data.insert_article(art)
+			data.insert_article(art.json_dump())
 
-	with open("usnews.txt", 'w') as f:
+	with open("web_scraper/usnews.txt", 'r') as f:
 		for line in f:
 			art = usscrape.parse_article(line)
-			data.insert_article(art)
-
-	with open("yf.txt", 'w') as f:
+			data.insert_article(art.json_dump())
+    
+	with open("web_scraper/yf.txt", 'r') as f:
 		for line in f:
 			art = yfscrape.parse_article(line)
-			data.insert_article(art)
+			data.insert_article(art.json_dump())
 
 
 if __name__ == "__main__":

@@ -10,6 +10,8 @@ from core.Article import Article
 
 """
 TODO: How to scrape the slideshow articles?
+TODO: Looks like they changed some of the xpaths, update them. 
+		art.title = soup.find('h1', {'class': re.compile("Heading__HeadingStyled.*")}).text is None
 
 """ 
 
