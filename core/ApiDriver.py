@@ -92,7 +92,7 @@ class TDAPI():
 			self.refresh_tok = resp["refresh_token"]
 
 	@check_auth	
-	def get_history(self, ticker="", periodType="day", period="10", frequencyType="minute", frequency="1", start_epoch=0, end_epoch=0, datetime_str=True):
+	def get_history(self, ticker="", periodType="day", period="10", frequencyType="minute", frequency="1", start_epoch=0, end_epoch=0, datetime_str=False):
 		"""
 		Get the historical data from a stock. If using epochs for time period no need to specify period argument
 
@@ -103,6 +103,7 @@ class TDAPI():
 		frequency -- {"minute" : ["1", "5", "10", "15", "30"], "daily" : "1", "weekly" : "1", "monthly" : "1"} number of frequencyType in each chunk\n
 		start_epoch -- POSIX timestamp in seconds to begin. Must be int not float
 		end_epoch -- POSIX timestamp in seconds to end. Must be int not float
+		datetime_str -- Convert date to a human readable time. Not to be used for database records
 		"""
 		self.logger.debug(f"Querying API for {ticker}")
 		headers = {"Authorization" : f"Bearer {self.auth_tok}"}
@@ -116,9 +117,11 @@ class TDAPI():
 			self.logger.critical(f"CANNOT COMPLETE REQUEST ----- {resp}")
 			return "ERROR" + resp["error"]
 		
-		if datetime_str:
-			for x in resp["candles"]:
-				x["datetime"] = datetime.fromtimestamp(x["datetime"]/1000).strftime("%m/%d/%Y, %H:%M:%S")
+		for x in resp["candles"]:
+			x["datetime"] = x["datetime"]/1000
+			if datetime_str:
+				x["datetime"] = datetime.fromtimestamp(x["datetime"]).strftime("%m/%d/%Y, %H:%M:%S")
+
 		self.logger.debug(f"API RETURNED {resp}")
 		return resp["candles"]
 		

@@ -66,7 +66,9 @@ class MarketWatchScraper(BaseScraper):
 		# Tickers
 		tickers = soup.findAll('span', {'class': 'symbol'})
 		for ticker in tickers:
-			art.tickers.add(ticker.text)
+			#TODO: why was a blank ticker getting in here?
+			if not ticker.text == '':
+				art.tickers.add(ticker.text)
 		
 		
 			
@@ -82,7 +84,6 @@ class MarketWatchScraper(BaseScraper):
 			art.date = soup.find('time', {'class': 'timestamp timestamp--pub'}).text
 		
 		art.date = re.sub('\s+', ' ', art.date)[1:-4]
-		self.logger.debug(art.date[-4:])
 		if art.date[-4:] == "a.m.":
 			art.date = art.date[:-4] + "AM"
 		if art.date[-4:] == "p.m.":

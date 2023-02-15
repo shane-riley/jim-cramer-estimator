@@ -25,7 +25,8 @@ class Article():
 		Args:
 			name (str): file location, or none to return a string
 		"""
-		self.text = self.text.replace("'", "''")    #Escape single quotes
+		self.text = self.text.replace("'", "''").strip()    #Escape single quotes
+		self.title = self.title.strip()
 		self.site = self.site.replace(" ", "_").lower()
 		self.author = self.author.replace(" ", "_")
 		if name:
