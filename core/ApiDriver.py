@@ -15,6 +15,7 @@ class TDAPI():
 	""" 
 
 	def __init__(self):
+		self.logger = logging.getLogger(__name__)
 		self.retreive_client()
 		self.retreive_refresh()
 		self.retreive_auth()
@@ -23,14 +24,14 @@ class TDAPI():
 		"""
 		Gets the client ID from the file, required to make any calls
 		"""
-		with open("client_token.key", "r") as f:
+		with open("auth_tokens/client_token.key", "r") as f:
 			self.client_token = f.readline().strip()
 
 	def retreive_refresh(self):
 		"""
 		Get the refresh token from the file system. Create a new one if invalid or about to expire
 		"""
-		with open("refresh_token.key", "r") as f:
+		with open("auth_tokens/refresh_token.key", "r") as f:
 			self.refresh_tok = f.readline().strip()
 			auth_time = f.readline()
 			if auth_time == "":
@@ -44,7 +45,7 @@ class TDAPI():
 		"""
 		Get the current auth token. Create a new one if invalid or expired
 		"""
-		with open("auth_token.key", "r") as f:
+		with open("auth_tokens/auth_token.key", "r") as f:
 			self.auth_tok = f.readline().strip()
 			auth_time = f.readline()
 			if auth_time == "":
@@ -70,10 +71,10 @@ class TDAPI():
 		"""
 		resp = requests.post("https://api.tdameritrade.com/v1/oauth2/token", data={"grant_type": "refresh_token", "refresh_token": self.refresh_tok, "client_id" : self.client_token}).json()
 		if "error" in resp:
-			logging.debug(resp)
-			logging.critical("UNABLE TO CREATE NEW AUTH TOKEN")
+			self.logger.debug(resp)
+			self.logger.critical("UNABLE TO CREATE NEW AUTH TOKEN")
 			return 
-		with open("auth_token.key", "w") as f:
+		with open("auth_tokens/auth_token.key", "w") as f:
 			f.write(resp["access_token"]+"\n")
 			f.write(datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
 			self.auth_tok = resp["access_token"]
@@ -84,8 +85,8 @@ class TDAPI():
 		Create a new refresh token. Should be used every ~80 days
 		"""
 		resp = requests.post("https://api.tdameritrade.com/v1/oauth2/token", data={"grant_type": "refresh_token", "refresh_token": self.refresh_tok, "access_type": "offline", "client_id" : self.client_token, "redirect_uri" : ""}).json()
-		logging.debug(resp)
-		with open("refresh_token.key", "w") as f:
+		self.logger.debug(resp)
+		with open("auth_tokens/refresh_token.key", "w") as f:
 			f.write(resp["refresh_token"]+"\n")
 			f.write(datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
 			self.refresh_tok = resp["refresh_token"]
@@ -100,24 +101,24 @@ class TDAPI():
 		period -- {"day" : [1, 2, 3, 4, 5, 10], "month" : [1,2,3,6], "year" : [1, 2, 3, 5, 10, 15, 20], "ytd" : 1} how much history to return for the ticker\n
 		frequencyType -- {"day" : "minute", "month" : ["daily","weekly"], "year" : ["daily", "weekly", "monthly"], "ytd" : ["daily", "weekly"]} frequency that a new chunk is created\n
 		frequency -- {"minute" : ["1", "5", "10", "15", "30"], "daily" : "1", "weekly" : "1", "monthly" : "1"} number of frequencyType in each chunk\n
-		start_epoch -- POSIX timestamp in milliseconds to begin. Must be int not float
-		end_epoch -- POSIX timestamp in milliseconds to end. Must be int not float
+		start_epoch -- POSIX timestamp in seconds to begin. Must be int not float
+		end_epoch -- POSIX timestamp in seconds to end. Must be int not float
 		"""
-		logging.debug(f"Querying API for {ticker}")
+		self.logger.debug(f"Querying API for {ticker}")
 		headers = {"Authorization" : f"Bearer {self.auth_tok}"}
 		
 		if start_epoch == 0:
 			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "period" : period, "frequencyType" : frequencyType, "frequency": frequency}, headers=headers).json()
 		else:
-			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "frequencyType" : frequencyType, "frequency": frequency, "endDate" : end_epoch, "startDate" : start_epoch}, headers=headers).json()
+			resp = requests.get(f"https://api.tdameritrade.com/v1/marketdata/{ticker}/pricehistory", params={"periodType" : periodType, "frequencyType" : frequencyType, "frequency": frequency, "endDate" : end_epoch*1000, "startDate" : start_epoch*1000}, headers=headers).json()
 
 		if "error" in resp:
-			logging.critical(f"CANNOT COMPLETE REQUEST ----- {resp}")
+			self.logger.critical(f"CANNOT COMPLETE REQUEST ----- {resp}")
 			return "ERROR" + resp["error"]
 		
 		if datetime_str:
 			for x in resp["candles"]:
 				x["datetime"] = datetime.fromtimestamp(x["datetime"]/1000).strftime("%m/%d/%Y, %H:%M:%S")
-		logging.debug(f"API RETURNED {resp}")
+		self.logger.debug(f"API RETURNED {resp}")
 		return resp["candles"]
 		

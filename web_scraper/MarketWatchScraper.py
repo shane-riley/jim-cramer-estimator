@@ -5,8 +5,8 @@ from requests import HTTPError
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-from src.web_scraper.BaseScraper import BaseScraper
-from src.core.Article import Article
+from web_scraper.BaseScraper import BaseScraper
+from core.Article import Article
 
 """
 TODO: How to scrape t he slideshow articles?
@@ -17,7 +17,7 @@ class MarketWatchScraper(BaseScraper):
 
 	SITE_NAME = 'Market Watch'
 	def __init__(self):
-		pass
+		self.logger = logging.getLogger(__name__)
 
 	def get_url(self, index: int) -> str:
 		"""
@@ -82,16 +82,16 @@ class MarketWatchScraper(BaseScraper):
 			art.date = soup.find('time', {'class': 'timestamp timestamp--pub'}).text
 		
 		art.date = re.sub('\s+', ' ', art.date)[1:-4]
-		logging.debug(art.date[-4:])
+		self.logger.debug(art.date[-4:])
 		if art.date[-4:] == "a.m.":
 			art.date = art.date[:-4] + "AM"
 		if art.date[-4:] == "p.m.":
 			art.date = art.date[:-4] + "PM"
 		
 		if update == 0:
-			art.date = int(datetime.strptime(art.date, "Last Updated: %b. %d, %Y at %I:%M %p").timestamp()*1000)
+			art.date = int(datetime.strptime(art.date, "Last Updated: %b. %d, %Y at %I:%M %p").timestamp())
 		else:
-			art.date = int(datetime.strptime(art.date, "Published: %b. %d, %Y at %I:%M %p").timestamp()*1000)
+			art.date = int(datetime.strptime(art.date, "Published: %b. %d, %Y at %I:%M %p").timestamp())
 
 		# Site
 		art.site = self.SITE_NAME

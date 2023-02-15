@@ -5,8 +5,8 @@ from requests import HTTPError, get
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-from src.web_scraper.BaseScraper import BaseScraper
-from src.core.Article import Article
+from web_scraper.BaseScraper import BaseScraper
+from core.Article import Article
 
 """
 TODO: How to scrape the slideshow articles?
@@ -16,8 +16,8 @@ TODO: How to scrape the slideshow articles?
 class USNewsScraper(BaseScraper):
 
 	SITE_NAME = 'US News'
-	def __init__(self, logger=None):
-		pass
+	def __init__(self):
+		self.logger = logging.getLogger(__name__)
 
 	def get_url(self, index: int) -> str:
 		"""
@@ -71,7 +71,7 @@ class USNewsScraper(BaseScraper):
 			ticker_getter = re.compile("/symbols/.*/")
 			for elem in ticker_elems:
 				ticker = ticker_getter.search(elem.contents[0]["href"]).group(0)[9:-1] 
-				logging.debug(ticker)
+				self.logger.debug(ticker)
 				art.tickers.add(ticker)
 		else:
 			#If no iframe, get from the article headers
@@ -81,7 +81,7 @@ class USNewsScraper(BaseScraper):
 				ticker = ticker_getter.search(elem.text)
 				if ticker:
 					ticker = ticker.group(0)[1:-1]
-					logging.debug(ticker)
+					self.logger.debug(ticker)
 					art.tickers.add(ticker)
 			
 		# Author
@@ -89,7 +89,7 @@ class USNewsScraper(BaseScraper):
 
 		# Date
 		art.date = soup.find('span', {'class': re.compile(".*byline-article-date-span")}).text
-		art.date = int(datetime.strptime(art.date, "%b. %d, %Y").timestamp()*1000)
+		art.date = int(datetime.strptime(art.date, "%b. %d, %Y").timestamp())
 
 		# Site
 		art.site = self.SITE_NAME
