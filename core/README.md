@@ -33,8 +33,19 @@ This class handles the API authentication and requests to provide historical sto
 7) ApiDriver.py can now handle reauth again
 
 ## Data Driver
-This class handles the local database storing the stock data.
-In the future this should be moved to a larger storage server when the web app is running
+This class handles the raw SQL interactions.
+
+### Postgres local setup
+1) Install postgres, ensure \bin is on path
+2) Ensure postgres server is running 
+	-D is the directory where postgres will store the databases
+	pg_ctl -D "C:\Program Files\PostgreSQL\15\data" start
+3) Execute command 'createdb stocks'
+4) Ensure there is a user which can login and make changes to the database
+	Use postgres user for local testing
+	4a) To create a user, use psql stocks, CREATE USER xxx SUPERUSER PASSWORD 'xxx'
+		Use other roles than superuser if needed, may have to grant specific permissions to tables in the db for the user if not a superuser
+5) Change login information in DataDriver connect_db() for psycopg2.connect() 
 
 ## Sentiment
 

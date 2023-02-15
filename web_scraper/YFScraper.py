@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from dateutil.parser import isoparse
 
-from src.web_scraper.BaseScraper import BaseScraper
-from src.core.Article import Article
+from web_scraper.BaseScraper import BaseScraper
+from core.Article import Article
 
 
 class YFScraper(BaseScraper):
@@ -16,8 +16,8 @@ class YFScraper(BaseScraper):
 	""" 
 	Web Scraper for Yahoo Finance
 	"""
-	def __init__(self, logger=None):
-		pass
+	def __init__(self):
+		self.logger = logging.getLogger(__name__)
 
 	def get_url(self, index: int) -> str:
 		"""
@@ -104,7 +104,7 @@ class YFScraper(BaseScraper):
 		art.author = soup.find('span', {'class': 'caas-author-byline-collapse'}).text
 
 		# Date
-		art.date = int(isoparse(soup.find('time')['datetime']).timestamp() * 1000)
+		art.date = int(isoparse(soup.find('time')['datetime']).timestamp())
 
 		# Site
 		art.site = self.SITE_NAME

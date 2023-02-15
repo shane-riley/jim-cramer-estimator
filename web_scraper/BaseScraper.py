@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.core.Article import Article
+from core.Article import Article
 
 import requests
 
